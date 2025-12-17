@@ -1,6 +1,6 @@
 import express from "express";
-import { env } from "./config/env.js";
 import { connectDB } from "./config/dbinit.js";
+import { env } from "./config/env.js";
 
 const app = express();
 
@@ -16,4 +16,3 @@ connectDB().then(() => {
     console.log(`Server running on port ${PORT}`);
   });
 });
-
