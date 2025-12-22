@@ -1,5 +1,5 @@
 import express from "express";
-import { protect } from "../../middleware/auth.js";
+import { protect } from "./middleware/auth.js";
 import adminRoutes from "./routes/admin/route.js";
 import authRoutes from "./routes/auth/route.js";
 

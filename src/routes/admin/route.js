@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { PERMISSIONS } from "../../config/roles.js";
+import { PERMISSIONS } from "../../constants/roles.js";
 import { createAdminOrStaff } from "../../controllers/user-management/controller.js";
 import { authorize } from "../../middleware/auth.js";
 
