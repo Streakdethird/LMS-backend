@@ -12,7 +12,11 @@ export const createTransaction = async (req, res) => {
 export const getAllTransactions = async (_req, res) => {
   try {
     const transactions = await db.BookTransaction.findAll({
-      include: [db.Book, { model: db.User, as: "borrower" }, { model: db.User, as: "librarian" }],
+      include: [
+        db.Book,
+        { model: db.User, as: "borrower" },
+        { model: db.User, as: "librarian" },
+      ],
     });
     res.json(transactions);
   } catch (err) {

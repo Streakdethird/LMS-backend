@@ -1,4 +1,3 @@
-// models/bookTransaction.model.js
 export default (sequelize, DataTypes) => {
   const BookTransaction = sequelize.define("BookTransaction", {
     id: {
