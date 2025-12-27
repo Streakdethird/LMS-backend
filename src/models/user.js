@@ -19,8 +19,8 @@ export default (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: "student",
     },
-    created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW},
-  tableName: 'users', timestamps: false
+    created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW},},
+  {tableName: 'users', timestamps: false
 
   });
   

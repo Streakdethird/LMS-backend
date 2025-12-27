@@ -1,5 +1,5 @@
-import db from "../models/index.js";
-import { sendSuccess, sendError } from "../helpers/responseHelper.js";
+import db from "../../models/index.js";
+import { sendSuccess, sendError } from "../../helpers/responseHelper.js";
 
 // CREATE book
 export const createBook = async (req, res) => {

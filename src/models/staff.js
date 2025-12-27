@@ -1,21 +1,23 @@
-// models/staff.model.js
 export default (sequelize, DataTypes) => {
   const Staff = sequelize.define(
     "Staff",
     {
-      staffId: {
-        type: DataTypes.STRING,
-        primaryKey: true, 
-        allowNull: false,
-        unique: true, 
-      },
       user_id: {
         type: DataTypes.INTEGER,
-        unique: true, 
+        primaryKey: true, // ✅ This is the correct primary key
         allowNull: false,
+        references: {
+          model: "Users",
+          key: "id",
+        },
+      },
+      staffId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,     // ✅ Still unique, but not a primary key
       },
       designation: {
-        type: DataTypes.STRING, 
+        type: DataTypes.STRING,
         allowNull: true,
       },
       created_at: {
@@ -29,9 +31,7 @@ export default (sequelize, DataTypes) => {
     }
   );
 
-  // Associations
   Staff.associate = (models) => {
-    // Link to the User table via user_id
     Staff.belongsTo(models.User, {
       foreignKey: "user_id",
       onDelete: "CASCADE",
