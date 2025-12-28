@@ -1,11 +1,9 @@
 import express from "express";
 import { protect } from "./middleware/auth.js";
+import { globalErrorHandler } from "./middleware/errorHandler.js";
 import adminRoutes from "./routes/admin/route.js";
 import authRoutes from "./routes/auth/route.js";
-import bookRoutes from "./routes/books/route.js";
-import borrowingRoutes from "./routes/borrowing/route.js";
-import reportRoutes from "./routes/reports/route.js";
-import fineRoutes from "./routes/fines/route.js";
+import AppError from "./utils/AppError.js";
 
 const createApp = () => {
   const app = express();
@@ -31,7 +29,7 @@ const createApp = () => {
   app.use("/api/fines", fineRoutes);
 
   // Handle unhandled routes (404)
-  app.all("*", (req, res, next) => {
+  app.all("/*splat", (req, _res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
   });
 
