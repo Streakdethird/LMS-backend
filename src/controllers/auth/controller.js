@@ -1,4 +1,3 @@
-// src/controllers/auth/controller.js
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { env } from "../../config/env.js";
@@ -147,9 +146,7 @@ export const updatePassword = async (req, res, next) => {
 
   try {
     if (!oldPassword || !newPassword) {
-      return next(
-        new AppError("Both old and new passwords are required", 400)
-      );
+      return next(new AppError("Both old and new passwords are required", 400));
     }
 
     const user = await db.User.findByPk(userId);

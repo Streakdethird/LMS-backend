@@ -1,4 +1,3 @@
-// src/controllers/user-management/controller.js
 import bcrypt from "bcryptjs";
 import { ROLES } from "../../constants/roles.js";
 import db from "../../models/index.js";
@@ -29,9 +28,7 @@ export const createAdminOrStaff = async (req, res, next) => {
 
   // If role is staff, ensure staffId is provided
   if (role === ROLES.STAFF && !staffId) {
-    return next(
-      new AppError("Staff ID is required for staff accounts.", 400)
-    );
+    return next(new AppError("Staff ID is required for staff accounts.", 400));
   }
 
   const t = await db.sequelize.transaction();
