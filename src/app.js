@@ -13,7 +13,7 @@ const createApp = () => {
   app.use(express.json());
 
   app.get("/", (_req, res) => {
-    res.send("Hello world");
+    res.send("Hello from LMS backend");
   });
 
   app.use("/api/auth", authRoutes);
