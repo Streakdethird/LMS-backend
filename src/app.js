@@ -1,9 +1,9 @@
 import express from "express";
-import swaggerUi from "swagger-ui-express";
-import YAML from "yamljs";
-import path from "path";
 import fs from "fs";
+import path from "path";
+import swaggerUi from "swagger-ui-express";
 import { fileURLToPath } from "url";
+import YAML from "yamljs";
 import { protect } from "./middleware/auth.js";
 import adminRoutes from "./routes/admin/route.js";
 import authRoutes from "./routes/auth/route.js";
@@ -16,8 +16,12 @@ console.log("-----------------------------------------");
 console.log("Searching for Swagger file at:", swaggerPath);
 
 if (!fs.existsSync(swaggerPath)) {
-  console.log("❌ CRITICAL ERROR: The file 'swagger.yaml' is NOT in the root folder!");
-  console.log("Make sure it is inside: C:\\Users\\USER-PC\\Desktop\\lmsbackend\\LMS-backend\\");
+  console.log(
+    "❌ CRITICAL ERROR: The file 'swagger.yaml' is NOT in the root folder!"
+  );
+  console.log(
+    "Make sure it is inside: C:\\Users\\USER-PC\\Desktop\\lmsbackend\\LMS-backend\\"
+  );
   console.log("-----------------------------------------");
 }
 

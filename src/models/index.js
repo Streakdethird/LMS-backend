@@ -16,13 +16,13 @@ const modelFiles = fs
 for (const file of modelFiles) {
   // 2. Build the absolute path
   const filePath = path.join(__dirname, file);
-  
+
   // 3. THE FIX: Convert the path to a file:// URL string
   const fileUrl = pathToFileURL(filePath).href;
 
   // 4. Use the URL instead of the raw path string
   const { default: modelDefiner } = await import(fileUrl);
-  
+
   const model = modelDefiner(sequelize, Sequelize.DataTypes);
   db[model.name] = model;
 }
