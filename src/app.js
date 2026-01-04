@@ -17,7 +17,7 @@ console.log("Searching for Swagger file at:", swaggerPath);
 
 if (!fs.existsSync(swaggerPath)) {
   console.log(
-    "❌ CRITICAL ERROR: The file 'swagger.yaml' is NOT in the root folder!"
+    "CRITICAL ERROR: The file 'swagger.yaml' is NOT in the root folder!"
   );
   console.log(
     "Make sure it is inside: C:\\Users\\USER-PC\\Desktop\\lmsbackend\\LMS-backend\\"
