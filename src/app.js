@@ -43,8 +43,16 @@ const createApp = () => {
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
   app.use("/api/auth", authRoutes);
   app.use(protect);
+<<<<<<< HEAD
 
   // RBAC Protected Routes
+=======
+<<<<<<< HEAD
+=======
+
+  // RBAC Protected Routes
+>>>>>>> upstream/main
+>>>>>>> main
   app.use("/api/admin", adminRoutes);
   app.use("/api/books", bookRoutes);
   app.use("/api/reports", reportRoutes);
