@@ -2,7 +2,6 @@ import express from "express";
 import { protect } from "./middleware/auth.js";
 import adminRoutes from "./routes/admin/route.js";
 import authRoutes from "./routes/auth/route.js";
-import bookRoutes from "./routes/book/bookRoutes.js";
 
 const createApp = () => {
   const app = express();
@@ -21,7 +20,6 @@ const createApp = () => {
   app.use(protect);
 
   app.use("/api/admin", adminRoutes);
-  app.use("/api/books", bookRoutes);
 
   return app;
 };

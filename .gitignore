@@ -24,3 +24,7 @@ Thumbs.db
 
 # Coverage
 coverage/
+
+
+# Script file
+scripts/
