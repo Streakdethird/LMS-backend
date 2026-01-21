@@ -2,12 +2,12 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { env } from "../../config/env.js";
 import db from "../../models/index.js";
+import AppError from "../../utils/AppError.js";
 
 /**
  * Handles student registration.
- * Uses a managed transaction to ensure both User and Student records are created atomically.
  */
-export const signup = async (req, res) => {
+export const studentSignup = async (req, res, next) => {
   const {
     email,
     password,
@@ -19,7 +19,7 @@ export const signup = async (req, res) => {
     entryYear,
     programDuration,
     programType,
-  } = req.body;
+  } = req.body || {};
 
   if (
     !email ||
@@ -28,25 +28,38 @@ export const signup = async (req, res) => {
     !lastName ||
     !matricNumber ||
     !department ||
-    !entryYear ||
-    !programDuration ||
     !programType
   ) {
-    return res
-      .status(400)
-      .json({ message: "All required fields must be provided." });
+    return next(new AppError("All required fields must be provided.", 400));
   }
 
-  // Start a transaction to prevent "orphan" users (User created without a Student profile)
+  const entryYearNumber = Number(entryYear);
+  if (!Number.isInteger(entryYearNumber) || entryYearNumber <= 0) {
+    return next(new AppError("entryYear must be a valid integer.", 400));
+  }
+
+  const programDurationNumber = Number(programDuration);
+  if (!Number.isInteger(programDurationNumber) || programDurationNumber <= 0) {
+    return next(new AppError("programDuration must be a valid integer.", 400));
+  }
+
+  const allowedProgramTypes = ["Undergraduate", "Postgraduate"];
+  if (!allowedProgramTypes.includes(programType)) {
+    return next(
+      new AppError(
+        `programType must be one of: ${allowedProgramTypes.join(", ")}.`,
+        400
+      )
+    );
+  }
+
   const t = await db.sequelize.transaction();
 
   try {
     const existingUser = await db.User.findOne({ where: { email } });
     if (existingUser) {
       await t.rollback();
-      return res
-        .status(400)
-        .json({ message: "User with this email already exists" });
+      return next(new AppError("User with this email already exists", 400));
     }
 
     const existingMatric = await db.Student.findOne({
@@ -54,9 +67,7 @@ export const signup = async (req, res) => {
     });
     if (existingMatric) {
       await t.rollback();
-      return res
-        .status(400)
-        .json({ message: "Matric number already registered" });
+      return next(new AppError("Matric number already registered", 400));
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -78,14 +89,14 @@ export const signup = async (req, res) => {
         userId: newUser.id,
         matricNumber,
         department,
-        entryYear,
-        programDuration,
+        entryYear: entryYearNumber,
+        programDuration: programDurationNumber,
         programType,
       },
       { transaction: t }
     );
 
-    await t.commit(); // If both creations succeed, commit the changes to the database
+    await t.commit();
 
     const token = jwt.sign(
       { id: newUser.id, role: newUser.role, email: newUser.email },
@@ -100,31 +111,109 @@ export const signup = async (req, res) => {
       id: newUser.id,
     });
   } catch (error) {
-    await t.rollback(); // If any error occurs during the transaction, revert all database changes
-    console.error("Signup Error:", error);
-    res
-      .status(500)
-      .json({ message: error.message || "Server error during signup" });
+    await t.rollback();
+    next(error);
+  }
+};
+
+/**
+ * Handles staff registration.
+ */
+export const staffSignup = async (req, res, next) => {
+  const {
+    email,
+    password,
+    firstName,
+    lastName,
+    phoneNumber,
+    staffId,
+    designation,
+  } = req.body || {};
+
+  if (!email || !password || !firstName || !lastName || !staffId) {
+    return next(new AppError("All required fields must be provided.", 400));
+  }
+
+  const t = await db.sequelize.transaction();
+
+  try {
+    const existingUser = await db.User.findOne({ where: { email } });
+    if (existingUser) {
+      await t.rollback();
+      return next(new AppError("User with this email already exists", 400));
+    }
+
+    const existingStaff = await db.Staff.findOne({
+      where: { staffId },
+    });
+    if (existingStaff) {
+      await t.rollback();
+      return next(new AppError("Staff ID already registered", 400));
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await db.User.create(
+      {
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        phoneNumber,
+        role: "staff",
+      },
+      { transaction: t }
+    );
+
+    await db.Staff.create(
+      {
+        userId: newUser.id,
+        staffId,
+        designation,
+      },
+      { transaction: t }
+    );
+
+    await t.commit();
+
+    const token = jwt.sign(
+      { id: newUser.id, role: newUser.role, email: newUser.email },
+      env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.status(201).json({
+      token,
+      role: newUser.role,
+      name: `${newUser.firstName} ${newUser.lastName}`,
+      id: newUser.id,
+    });
+  } catch (error) {
+    await t.rollback();
+    next(error);
   }
 };
 
 /**
  * Authenticates a user and returns a JWT token.
- * Works for all roles (Student, Staff, Admin).
  */
-export const login = async (req, res) => {
-  const { email, password } = req.body;
+export const login = async (req, res, next) => {
+  const { email, password } = req.body || {};
 
   try {
+    if (!email || !password) {
+      return next(new AppError("Please provide email and password", 400));
+    }
+
     const user = await db.User.findOne({ where: { email } });
 
     if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return next(new AppError("Invalid credentials", 401));
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return next(new AppError("Invalid credentials", 401));
     }
 
     const token = jwt.sign(
@@ -140,35 +229,32 @@ export const login = async (req, res) => {
       id: user.id,
     });
   } catch (error) {
-    console.log("error logging in:", error);
-    res.status(500).json({ message: "Server error during login" });
+    next(error);
   }
 };
 
 /**
  * Updates password for the currently authenticated user.
  */
-export const updatePassword = async (req, res) => {
-  const { oldPassword, newPassword } = req.body;
-  const userId = req.user.id; // Extracted from the 'protect' middleware token
+export const updatePassword = async (req, res, next) => {
+  const { oldPassword, newPassword } = req.body || {};
+  const userId = req.user.id;
 
   try {
     if (!oldPassword || !newPassword) {
-      return res
-        .status(400)
-        .json({ message: "Both old and new passwords are required" });
+      return next(new AppError("Both old and new passwords are required", 400));
     }
 
     const user = await db.User.findByPk(userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return next(new AppError("User not found", 404));
     }
 
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
-      return res
-        .status(401)
-        .json({ message: "The old password you entered is incorrect" });
+      return next(
+        new AppError("The old password you entered is incorrect", 401)
+      );
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -177,7 +263,6 @@ export const updatePassword = async (req, res) => {
 
     res.status(200).json({ message: "Password updated successfully" });
   } catch (error) {
-    console.log("error updating password:", error);
-    res.status(500).json({ message: "Error updating password" });
+    next(error);
   }
 };

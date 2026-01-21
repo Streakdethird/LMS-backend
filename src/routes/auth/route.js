@@ -1,14 +1,16 @@
 import { Router } from "express";
 import {
   login,
-  signup,
+  staffSignup,
+  studentSignup,
   updatePassword,
 } from "../../controllers/auth/controller.js";
 import { protect } from "../../middleware/auth.js";
 
 const router = Router();
 
-router.post("/signup", signup);
+router.post("/student-signup", studentSignup);
+router.post("/staff-signup", staffSignup);
 router.post("/login", login);
 router.post("/update-password", protect, updatePassword);
 
